@@ -1,0 +1,106 @@
+[ -n "${_INC_SHELL_RC}" ] && return; _INC_SHELL_RC=0; # pragma once
+
+# zle -N history-beginning-search-backward-end history-search-end
+# zle -N history-beginning-search-forward-end history-search-end
+# bindkey ‘\eOA’  history-search-backward
+# bindkey ‘\eOB’  history-search-forward
+# bindkey ‘^P’ up-line-or-beginning-search
+# bindkey ‘^N’ down-line-or-beginning-search
+
+full_path=$(realpath $0)
+# echo $full_path
+dir_path=$(dirname $full_path)
+# echo $dir_path
+
+# eval "$(oh-my-posh init zsh --config $dir_path/user.omp.json)"
+
+echo "Defining Functions & aliases..."
+function proj() {
+    if [ $# -eq 0 ]; then
+        echo "available projects"
+        ls ~/git
+    else
+        project="$1"
+        echo "proj: $project"
+        project_path=$(realpath -s ~/git/$project)
+        echo "looking for project at $project_path"
+        cd $project_path
+        if (test -f "$project_path/$project.code-workspace") then
+            echo "opening code workspace $project.code-workspace for project in $project_path"
+            code "$project_path/$project.code-workspace"
+        else
+            echo "opening project in $project_path"
+            code "$project_path" 
+        fi
+    fi
+
+    # if ($1 -eq "") then
+    #     echo "available projects"
+    #     ls ~/git
+    # else
+        # project="$1"
+        # echo "proj: $project"
+        # project_path=$(realpath -s ~/git/$project)
+        # echo "looking for project at $project_path"
+        # cd $project_path
+        # if (test -f "$project_path/$project.code-workspace") then
+        #     echo "opening code workspace $project.code-workspace for project in $project_path"
+        #     code-insiders "$project_path/$project.code-workspace"
+        # else
+        #     echo "opening project in $project_path"
+        #     code-insiders "$project_path" 
+        # fi
+    # fi
+}
+
+function genpw() {
+    cat /dev/urandom | LC_ALL=C tr -dc 'a-zA-Z0-9-_#^\$' | fold -w $1 | sed 1q
+}
+
+alias ls="ls --color"
+alias la="ls -a --color"
+alias ll="ls -la --color"
+alias rp="source ~/.zshrc"
+alias frp="unset _INC_SHELL_RC; source ~/.zshrc"
+alias ttenv="cp -R $dir_path/env-bak/* ~/git/tt/"
+alias bt="bashtop"
+alias ep="code $dir_path/user.rc"
+
+alias proxyon="export http_proxy='http://localhost:8888';export https_proxy='https://localhost:8888'"
+alias proxyoff="export http_proxy='';export https_proxy=''"
+
+echo "Loading PowerLevel 10K theme and settings..."
+source ~/powerlevel10k/powerlevel10k.zsh-theme
+# source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+# source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+plugins=(
+     azure
+     battery
+     colorize
+     docker
+     git
+     github
+     node
+     nodenv
+     npm
+     nvm
+     rust
+     sudo
+     themes
+     ubuntu
+     vscode
+     web-search
+     yarn
+     z
+     zsh-autosuggestions
+     zsh-syntax-highlighting
+)
+
+DISABLE_UPDATE_PROMPT=true
+
+echo "Loading Oh My Zsh..."
+source $ZSH/oh-my-zsh.sh
