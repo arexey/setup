@@ -12,9 +12,10 @@ echo $dir_path
 sudo apt update
 
 # install zsh
-if [ "$ZSH_VERSION" == "" ]; then
-sudo apt install -y zsh
-sudo chsh -s /usr/bin/zsh
+if [ "$ZSH_VERSION" == "" ]
+then
+    sudo apt install -y zsh
+    sudo chsh -s /usr/bin/zsh
 fi
 
 # install oh-my-zsh
