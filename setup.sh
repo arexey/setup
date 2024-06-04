@@ -9,12 +9,20 @@ echo $dir_path
 
 
 # update package management
-sudo apt update
+if [[-f /etc/debian_version]]; then
+    sudo apt update
+    sudo apt upgrade -y
+    sudo apt install -y curl wget git
+fi
+
+# install Homebrew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
 
 # install zsh
-if [ "$ZSH_VERSION" == "" ]
-then
-    sudo apt install -y zsh
+if [ "$ZSH_VERSION" == "" ]; then
+    brew install zsh
+    # sudo apt install -y zsh
     sudo chsh -s /usr/bin/zsh
 fi
 
@@ -23,7 +31,7 @@ rm -rf ~/.oh-my-zsh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh) --unattended --keep-zshrc"
 
 # use LF for clones repos
-git config --global core.autocrlf input                                                                                                                                                                               ─╯
+git config --global core.autocrlf input
 git config --global core.autocrlf false
 
 #install Nerd Fonts
@@ -42,15 +50,27 @@ git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-m
 rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 
+brew install fzf
+
+
 #install ohmyposh
 # sudo wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-amd64 -O /usr/local/bin/oh-my-posh
 # sudo chmod +x /usr/local/bin/oh-my-posh
 
 #install useful tools
-sudo add-apt-repository -y ppa:bashtop-monitor/bashtop
-
-sudo apt update
-sudo apt install -y bashtop
+brew install python3
+python3 -m pip install psutil
+brew install bash coreutils gnu-sed git
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    brew install osx-cpu-temp
+    git clone https://github.com/aristocratos/bashtop.git
+    cd bashtop
+    sudo make install
+else
+    sudo add-apt-repository -y ppa:bashtop-monitor/bashtop
+    sudo apt update
+    sudo apt install -y bashtop
+fi
 
 #update .zshrc
 
