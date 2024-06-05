@@ -30,7 +30,7 @@ function proj() {
             code "$project_path/$project.code-workspace"
         else
             echo "opening project in $project_path"
-            code "$project_path" 
+            eval code "$project_path" 
         fi
     fi
 
@@ -74,8 +74,6 @@ source ~/powerlevel10k/powerlevel10k.zsh-theme
 # source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 # source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 plugins=(
      azure
@@ -119,7 +117,11 @@ _fzf_compgen_path() {
 _fzf_compgen_dir() {
   fd --type=d --hidden --exclude .git . "$1"
 }
-eval "$(fzf --zsh)"
 
+echo "fzf loading..."
+eval "$(fzf --zsh)"
 echo "Loading Oh My Zsh..."
 source $ZSH/oh-my-zsh.sh
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
