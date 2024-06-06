@@ -10,7 +10,7 @@ echo $dir_path
 # install Homebrew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" < /dev/null
 
-brew install figlet -t lolcat
+brew install figlet lolcat
 
 # update package management
 if [[ -f /etc/debian_version ]]; then
