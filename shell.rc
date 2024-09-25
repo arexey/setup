@@ -158,7 +158,7 @@ alias cd="z"
 
 export BAT_THEME="Visual Studio Dark+"
 
-source ~/fzf-git/fzf-git.sh
+source ~/.fzf-git/fzf-git.sh
 
 # ---- Eza (better ls) -----
 
