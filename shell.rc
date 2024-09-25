@@ -71,8 +71,8 @@ alias proxyoff="export http_proxy='';export https_proxy=''"
 
 echo "Loading PowerLevel 10K theme and settings..."
 source ~/powerlevel10k/powerlevel10k.zsh-theme
-# source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-# source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 
 plugins=(
@@ -82,6 +82,7 @@ plugins=(
      docker
      git
      github
+     kubectl
      node
      nodenv
      npm
@@ -102,7 +103,7 @@ DISABLE_UPDATE_PROMPT=true
 
 
 echo "Loading Oh My Zsh..."
-source $ZSH/oh-my-zsh.sh
+source ${ZSH_CUSTOM:-~/.oh-my-zsh}/oh-my-zsh.sh
 
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
@@ -162,7 +163,9 @@ source ~/.fzf-git/fzf-git.sh
 
 # ---- Eza (better ls) -----
 
-alias ls="eza --color=always --long --git --no-filesize --icons=always --no-time --no-user --no-permissions"
+alias ls="eza --color=always --long --git --icons=always"
+alias l="eza --color=always --long --git --icons=always --no-filesize  --no-time --no-user --no-permissions"
+
 
 # thefuck alias
 eval $(thefuck --alias)

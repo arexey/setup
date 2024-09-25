@@ -10,7 +10,7 @@ echo $dir_path
 # install Homebrew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" < /dev/null
 
-brew install figlet -t lolcat
+brew install figlet lolcat
 
 # update package management
 if [[ -f /etc/debian_version ]]; then
@@ -127,7 +127,7 @@ fi
 
 #update .zshrc
 figlet -f slant "=== update .zshrc ===" | lolcat
-sed -i '/user.rc/d' ./.zshrc
+sed -i '.bak' '/user.rc/d' ~/.zshrc
 echo "source $dir_path/user.rc" >> ~/.zshrc
 
 figlet -f slant "=== install nvm ===" | lolcat
