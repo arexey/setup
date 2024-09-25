@@ -127,7 +127,7 @@ fi
 
 #update .zshrc
 figlet -f slant "=== update .zshrc ===" | lolcat
-sed -i '/user.rc/d' ./.zshrc
+sed -i '.bak' '/user.rc/d' ~/.zshrc
 echo "source $dir_path/user.rc" >> ~/.zshrc
 
 figlet -f slant "=== install nvm ===" | lolcat
