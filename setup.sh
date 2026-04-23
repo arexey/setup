@@ -8,7 +8,14 @@ dir_path=$(dirname $full_path)
 echo $dir_path
 
 # install Homebrew
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" < /dev/null
+if command -v brew >/dev/null 2>&1; then
+    echo "brew is installed"
+else
+    echo "brew is not installed"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" < /dev/null
+    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"' >> /home/user/.zshrc
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
+fi
 
 brew install figlet lolcat
 
@@ -114,7 +121,7 @@ figlet -f slant "=== install python3 ===" | lolcat
 brew install python3
 python3 -m pip install psutil
 brew install bash coreutils gnu-sed git
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [ "$OSTYPE" == "darwin"* ]; then
     brew install osx-cpu-temp
     git clone https://github.com/aristocratos/bashtop.git
     cd bashtop
