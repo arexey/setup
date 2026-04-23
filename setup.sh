@@ -27,14 +27,14 @@ figlet -t -f slant "=== install zsh ===" | lolcat
 if [ "$ZSH_VERSION" == "" ]; then
     brew install zsh
     # sudo apt install -y zsh
-    sudo chsh -s /usr/bin/zsh
+    sudo chsh -s $(command -v zsh)
 fi
 
 # install oh-my-zsh
 figlet -t -f slant "=== install oh-my-zsh ===" | lolcat
 
 rm -rf ~/.oh-my-zsh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh) --unattended --keep-zshrc"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh) --unattended"
 
 # use LF for clones repos
 git config --global core.autocrlf input

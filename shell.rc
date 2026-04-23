@@ -6,11 +6,16 @@
 # bindkey ‘\eOB’  history-search-forward
 # bindkey ‘^P’ up-line-or-beginning-search
 # bindkey ‘^N’ down-line-or-beginning-search
+bindkey -e
+bindkey '\e\e[C' forward-word
+bindkey '\e\e[D' backward-word
 
 full_path=$(realpath $0)
 # echo $full_path
 dir_path=$(dirname $full_path)
 # echo $dir_path
+echo "Running $full_path in $dir_path with ($SHELL)"
+export ZSH=~/.oh-my-zsh
 
 # eval "$(oh-my-posh init zsh --config $dir_path/user.omp.json)"
 
@@ -71,29 +76,34 @@ alias proxyoff="export http_proxy='';export https_proxy=''"
 
 echo "Loading PowerLevel 10K theme and settings..."
 source ~/powerlevel10k/powerlevel10k.zsh-theme
-source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+#source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+#source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 
 plugins=(
-     azure
+     # azure
      battery
      colorize
      docker
+     fzf
      git
-     github
+     # github
      kubectl
-     node
-     nodenv
-     npm
-     nvm
-     rust
+     mvn
+     # nodenv
+     # node
+     # npm
+     # nvm
+     python
+     # rust
      sudo
+     terraform
      themes
+     # tmux
      ubuntu
      vscode
      web-search
-     yarn
+     # yarn
      z
      zsh-autosuggestions
      zsh-syntax-highlighting
@@ -102,8 +112,10 @@ plugins=(
 DISABLE_UPDATE_PROMPT=true
 
 
-echo "Loading Oh My Zsh..."
-source ${ZSH_CUSTOM:-~/.oh-my-zsh}/oh-my-zsh.sh
+echo "ZSH=$ZSH, ZSH_CUSTOM=$ZSH_CUSTOM"
+echo "Loading Oh My Zsh (from ${ZSH:-~/.oh-my-zsh}/oh-my-zsh.sh)..."
+source ${ZSH:-~/.oh-my-zsh}/oh-my-zsh.sh
+echo "ZSH=$ZSH, ZSH_CUSTOM=$ZSH_CUSTOM"
 
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
@@ -152,14 +164,15 @@ _fzf_comprun() {
 echo "fzf loading..."
 eval "$(fzf --zsh)"
 
+echo "setting up zoxide..."
 # ---- Zoxide (better cd) ----
-eval "$(zoxide init zsh)"
+#eval "$(zoxide init zsh)"
 
 alias cd="z"
 
 export BAT_THEME="Visual Studio Dark+"
 
-source ~/.fzf-git/fzf-git.sh
+#source ~/.fzf-git/fzf-git.sh
 
 # ---- Eza (better ls) -----
 
@@ -168,8 +181,10 @@ alias l="eza --color=always --long --git --icons=always --no-filesize  --no-time
 
 
 # thefuck alias
-eval $(thefuck --alias)
-eval $(thefuck --alias fk)
+#eval $(thefuck --alias)
+#eval $(thefuck --alias fk)
 
+# echo "importing p10k"
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+# typeset -g POWERLEVEL9K_INSTANT_PROMPT=off
+# [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
