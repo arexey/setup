@@ -6,11 +6,16 @@
 # bindkey ‘\eOB’  history-search-forward
 # bindkey ‘^P’ up-line-or-beginning-search
 # bindkey ‘^N’ down-line-or-beginning-search
+bindkey -e
+bindkey '\e\e[C' forward-word
+bindkey '\e\e[D' backward-word
 
 full_path="${${(%):-%x}:A}"
 # echo $full_path
 dir_path="${full_path:h}"
 # echo $dir_path
+echo "Running $full_path in $dir_path with ($SHELL)"
+export ZSH=~/.oh-my-zsh
 
 # eval "$(oh-my-posh init zsh --config $dir_path/user.omp.json)"
 
@@ -37,7 +42,7 @@ function proj() {
             code "$project_path/$project.code-workspace"
         else
             echo "opening project in $project_path"
-            eval code "$project_path" 
+            eval code "$project_path"
         fi
     fi
 
@@ -55,7 +60,7 @@ function proj() {
         #     code-insiders "$project_path/$project.code-workspace"
         # else
         #     echo "opening project in $project_path"
-        #     code-insiders "$project_path" 
+        #     code-insiders "$project_path"
         # fi
     # fi
 }
@@ -85,25 +90,30 @@ unset _zc
 
 
 plugins=(
-     azure
+     # azure
      battery
      colorize
      docker
      docker-compose
+     fzf
      git
-     github
+     # github
      kubectl
-     node
-     nodenv
-     npm
-     nvm
-     rust
+     mvn
+     # nodenv
+     # node
+     # npm
+     # nvm
+     python
+     # rust
      sudo
+     terraform
      themes
+     # tmux
      ubuntu
      vscode
      web-search
-     yarn
+     # yarn
      z
      zsh-autosuggestions
      zsh-syntax-highlighting
@@ -112,8 +122,10 @@ plugins=(
 DISABLE_UPDATE_PROMPT=true
 
 
-echo "Loading Oh My Zsh..."
-source ${ZSH_CUSTOM:-~/.oh-my-zsh}/oh-my-zsh.sh
+echo "ZSH=$ZSH, ZSH_CUSTOM=$ZSH_CUSTOM"
+echo "Loading Oh My Zsh (from ${ZSH:-~/.oh-my-zsh}/oh-my-zsh.sh)..."
+source ${ZSH:-~/.oh-my-zsh}/oh-my-zsh.sh
+echo "ZSH=$ZSH, ZSH_CUSTOM=$ZSH_CUSTOM"
 
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
@@ -162,6 +174,7 @@ _fzf_comprun() {
 echo "fzf loading..."
 command -v fzf >/dev/null 2>&1 && eval "$(fzf --zsh)"
 
+echo "setting up zoxide..."
 # ---- Zoxide (better cd) ----
 if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh)"
@@ -184,5 +197,7 @@ if command -v thefuck >/dev/null 2>&1; then
     eval "$(thefuck --alias fk)"
 fi
 
+# echo "importing p10k"
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+# typeset -g POWERLEVEL9K_INSTANT_PROMPT=off
+# [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
