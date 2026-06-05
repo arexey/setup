@@ -7,12 +7,19 @@
 # bindkey ‘^P’ up-line-or-beginning-search
 # bindkey ‘^N’ down-line-or-beginning-search
 
-full_path=$(realpath $0)
+full_path="${${(%):-%x}:A}"
 # echo $full_path
-dir_path=$(dirname $full_path)
+dir_path="${full_path:h}"
 # echo $dir_path
 
 # eval "$(oh-my-posh init zsh --config $dir_path/user.omp.json)"
+
+for brew_candidate in /opt/homebrew/bin/brew /home/linuxbrew/.linuxbrew/bin/brew /usr/local/bin/brew; do
+    if [[ -x "$brew_candidate" ]]; then
+        eval "$("$brew_candidate" shellenv)"
+        break
+    fi
+done
 
 echo "Defining Functions & aliases..."
 function proj() {
@@ -70,9 +77,11 @@ alias proxyon="export http_proxy='http://localhost:8888';export https_proxy='htt
 alias proxyoff="export http_proxy='';export https_proxy=''"
 
 echo "Loading PowerLevel 10K theme and settings..."
-source ~/powerlevel10k/powerlevel10k.zsh-theme
-source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+[[ -f ~/powerlevel10k/powerlevel10k.zsh-theme ]] && source ~/powerlevel10k/powerlevel10k.zsh-theme
+_zc="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+[[ -f $_zc/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source $_zc/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+[[ -f $_zc/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && source $_zc/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+unset _zc
 
 
 plugins=(
@@ -80,6 +89,7 @@ plugins=(
      battery
      colorize
      docker
+     docker-compose
      git
      github
      kubectl
@@ -150,16 +160,17 @@ _fzf_comprun() {
 }
 
 echo "fzf loading..."
-eval "$(fzf --zsh)"
+command -v fzf >/dev/null 2>&1 && eval "$(fzf --zsh)"
 
 # ---- Zoxide (better cd) ----
-eval "$(zoxide init zsh)"
-
-alias cd="z"
+if command -v zoxide >/dev/null 2>&1; then
+    eval "$(zoxide init zsh)"
+    alias cd="z"
+fi
 
 export BAT_THEME="Visual Studio Dark+"
 
-source ~/.fzf-git/fzf-git.sh
+[[ -f ~/.fzf-git/fzf-git.sh ]] && source ~/.fzf-git/fzf-git.sh
 
 # ---- Eza (better ls) -----
 
@@ -168,8 +179,10 @@ alias l="eza --color=always --long --git --icons=always --no-filesize  --no-time
 
 
 # thefuck alias
-eval $(thefuck --alias)
-eval $(thefuck --alias fk)
+if command -v thefuck >/dev/null 2>&1; then
+    eval "$(thefuck --alias)"
+    eval "$(thefuck --alias fk)"
+fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

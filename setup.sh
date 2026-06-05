@@ -1,78 +1,110 @@
-#/bin/sh
+#!/usr/bin/env bash
+set -euo pipefail
 
 echo "Running setup script..."
-echo $0
-full_path=$(realpath $0)
-echo $full_path
-dir_path=$(dirname $full_path)
-echo $dir_path
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+dir_path="$SCRIPT_DIR"
+echo "$dir_path"
+
+detect_platform() {
+    case "$(uname -s)" in
+        Darwin) PLATFORM=mac;   BREW_PREFIX=/opt/homebrew;            HAS_APT=0 ;;
+        Linux)  PLATFORM=linux; BREW_PREFIX=/home/linuxbrew/.linuxbrew
+                [[ -f /etc/debian_version ]] && HAS_APT=1 || HAS_APT=0 ;;
+        *)      echo "Unsupported platform: $(uname -s)" >&2; exit 1 ;;
+    esac
+}
+detect_platform
+
+load_brew_env() {
+    if [[ -x "$BREW_PREFIX/bin/brew" ]]; then
+        eval "$("$BREW_PREFIX/bin/brew" shellenv)"
+    elif command -v brew >/dev/null 2>&1; then
+        eval "$(brew shellenv)"
+    fi
+}
+
+clone_if_missing() {
+    local repo=$1 dest=$2; shift 2
+    [[ -d "$dest/.git" ]] || git clone "$@" "$repo" "$dest"
+}
 
 # install Homebrew
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" < /dev/null
+if ! command -v brew >/dev/null 2>&1; then
+    if [[ "$HAS_APT" -eq 1 ]]; then
+        sudo apt update
+        sudo apt install -y curl git build-essential procps file
+    fi
+    NONINTERACTIVE=1 /bin/bash -c \
+        "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/null
+fi
+load_brew_env
 
 brew install figlet lolcat
 
-# update package management
-if [[ -f /etc/debian_version ]]; then
-    sudo apt update
-    sudo apt upgrade -y
-    sudo apt install -y curl wget git
-fi
-
 # copy .gitconfig
 figlet -t -f slant "=== copy .gitgonfig ===" | lolcat
-cp $dir_path/.gitconfig ~
+cp "$dir_path/.gitconfig" ~
 
 figlet -t -f slant "=== install zsh ===" | lolcat
-if [ "$ZSH_VERSION" == "" ]; then
+if ! command -v zsh >/dev/null 2>&1; then
     brew install zsh
-    # sudo apt install -y zsh
-    sudo chsh -s /usr/bin/zsh
+fi
+ZSH_BIN="$(command -v zsh)"
+if [[ "${SHELL:-}" != "$ZSH_BIN" ]]; then
+    grep -qx "$ZSH_BIN" /etc/shells 2>/dev/null || echo "$ZSH_BIN" | sudo tee -a /etc/shells >/dev/null
+    chsh -s "$ZSH_BIN" 2>/dev/null || sudo chsh -s "$ZSH_BIN" "$USER"
 fi
 
 # install oh-my-zsh
 figlet -t -f slant "=== install oh-my-zsh ===" | lolcat
+if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
+        "" --unattended --keep-zshrc
+fi
 
-rm -rf ~/.oh-my-zsh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh) --unattended --keep-zshrc"
-
-# use LF for clones repos
+# use LF for cloned repos
 git config --global core.autocrlf input
-git config --global core.autocrlf false
 
 # install Nerd Fonts
 figlet -t -f slant "=== install Nerd Fonts ===" | lolcat
-git clone --depth 1 https://github.com/ryanoasis/nerd-fonts.git ~/nerdfonts
-~/nerdfonts/isntall.sh
+clone_if_missing https://github.com/ryanoasis/nerd-fonts.git "$HOME/nerdfonts" --depth 1
+if [[ ! -f "$HOME/.nerdfonts-installed" ]]; then
+    "$HOME/nerdfonts/install.sh" Meslo
+    touch "$HOME/.nerdfonts-installed"
+fi
 
 # install powerlevel10k
 figlet -t -f slant "=== install powerlevel10k ===" | lolcat
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
-cp $dir_path/.p10k.zsh ~/.p10k.zsh
+clone_if_missing https://github.com/romkatv/powerlevel10k.git "$HOME/powerlevel10k" --depth=1
+cp "$dir_path/.p10k.zsh" ~/.p10k.zsh
+
+ZSH_CUSTOM_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
 
 # zsh-autosuggestions
 figlet -t -f slant "=== install zsh-autosuggestions ===" | lolcat
-rm -rf  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+clone_if_missing https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM_DIR/plugins/zsh-autosuggestions"
 
 # zsh-syntax-highlighting
 figlet -t -f slant "=== install zsh-syntax-highlighting ===" | lolcat
-rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+clone_if_missing https://github.com/zsh-users/zsh-syntax-highlighting.git "$ZSH_CUSTOM_DIR/plugins/zsh-syntax-highlighting"
 
 # install cli tools
 figlet -t -f slant "=== install CLI tools ===" | lolcat
 figlet -t -f slant "=== install fzf ===" | lolcat
 brew install fzf
 figlet -t -f slant "=== install fzf-git ===" | lolcat
-git clone https://github.com/junegunn/fzf-git.sh.git ~/.fzf-git
+clone_if_missing https://github.com/junegunn/fzf-git.sh.git "$HOME/.fzf-git"
 figlet -t -f slant "=== install bat ===" | lolcat
 brew install bat
 figlet -t -f slant "=== install fd ===" | lolcat
 brew install fd
 figlet -t -f slant "=== install git-delta ===" | lolcat
 brew install git-delta
-echo "
+if ! grep -q '^\s*pager\s*=\s*delta' ~/.gitconfig; then
+    cat >> ~/.gitconfig <<'EOF'
+
 [core]
     pager = delta
 
@@ -80,20 +112,16 @@ echo "
     diffFilter = delta --color-only
 
 [delta]
-    navigate = true    # use n and N to move between diff sections
+    navigate = true
     side-by-side = true
-
-
-    # delta detects terminal colors automatically; set one of these to disable auto-detection
-    # dark = true
-    # light = true
 
 [merge]
     conflictstyle = diff3
 
 [diff]
     colorMoved = default
-" >> ~/.gitconfig
+EOF
+fi
 figlet -t -f slant "=== install eza ===" | lolcat
 brew install eza
 figlet -t -f slant "=== install zoxide ===" | lolcat
@@ -101,35 +129,39 @@ brew install zoxide
 figlet -t -f slant "=== install tldr ===" | lolcat
 brew install tlrc
 figlet -t -f slab "=== install thefuck ===" | lolcat
-brew install thefuck
-
-
-#install ohmyposh
-# sudo wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-amd64 -O /usr/local/bin/oh-my-posh
-# sudo chmod +x /usr/local/bin/oh-my-posh
-
-#install useful tools
-figlet -f slant "=== install usefult ools ===" | lolcat
-figlet -f slant "=== install python3 ===" | lolcat
-brew install python3
-python3 -m pip install psutil
-brew install bash coreutils gnu-sed git
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    brew install osx-cpu-temp
-    git clone https://github.com/aristocratos/bashtop.git
-    cd bashtop
-    sudo make install
-else
-    sudo add-apt-repository -y ppa:bashtop-monitor/bashtop
-    sudo apt update
-    sudo apt install -y bashtop
+if ! command -v thefuck >/dev/null 2>&1; then
+    brew install pipx
+    pipx ensurepath
+    pipx install thefuck || pip3 install --user thefuck
 fi
 
-#update .zshrc
+# install useful tools
+figlet -f slant "=== install useful tools ===" | lolcat
+figlet -f slant "=== install python3 ===" | lolcat
+brew install python3
+python3 -m pip install --user psutil || pipx install psutil || true
+brew install bash coreutils gnu-sed git
+
+brew install bashtop
+if [[ "$PLATFORM" == "mac" ]]; then
+    brew install osx-cpu-temp
+fi
+
+# update .zshrc
 figlet -f slant "=== update .zshrc ===" | lolcat
-sed -i '.bak' '/user.rc/d' ~/.zshrc
+if [[ -f ~/.zshrc ]]; then
+    tmp=$(mktemp)
+    sed '/user.rc/d' ~/.zshrc > "$tmp" && mv "$tmp" ~/.zshrc
+fi
 echo "source $dir_path/user.rc" >> ~/.zshrc
 
 figlet -f slant "=== install nvm ===" | lolcat
-zsh -lic 'sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | zsh && source ~/.zshrc && nvm install node && nvm install 14 && echo "setup complete"'
-
+export NVM_DIR="$HOME/.nvm"
+if [[ ! -s "$NVM_DIR/nvm.sh" ]]; then
+    curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+fi
+# shellcheck disable=SC1091
+\. "$NVM_DIR/nvm.sh"
+nvm install node
+nvm install 14
+echo "setup complete"
