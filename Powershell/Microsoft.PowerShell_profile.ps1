@@ -3,22 +3,10 @@
 #Import-Module posh-git
 
 #Install-Module -Name MSTerminalSettings
-function global:score() {
-	set-location c:\Projects\SettleTheScore\
-}
-
 function global:proj($project) {
-	if (Test-Path c:\git\$project) {
-		set-location c:\git\$project
-		return
-	}
-	if (Test-Path d:\git\$project) {
-		set-location d:\git\$project
-		return
-	}
-	if (Test-Path f:\git\$project) {
-		set-location f:\git\$project
-		return
+	$path = Join-Path $HOME "git/$project"
+	if (Test-Path $path) {
+		set-location $path
 	}
 }
 
