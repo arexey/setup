@@ -155,10 +155,6 @@ function global:linuxOff() {
 #    Write-Host $path
 #    #Move-Item $path -Destination $destination -Force -Verbose
 # }
-#if (-not (Test-Path $folder\profiles.json)) {
-#	copy $env:OneDriveConsumer\Code\Powershell\profiles.json $folder
-#}
-
 $happyBg = "http://i.imgur.com/Po8pR3A.gif"
 $happyBg = "https://66.media.tumblr.com/db2917bb82134ccb4ad456284b07932b/tumblr_osxlak6ok21qeyvpto1_500.gif"
 $unhappyBg = "https://2.bp.blogspot.com/-CPO_z4zNSnc/WsY667p0JgI/AAAAAAAAYRs/ubTMJD5ToyImbR-o4EiK18gBypYXd0RiwCLcBGAs/s1600/Mercenary%2BGarage%2BError%2BGIF.gif"
@@ -179,7 +175,8 @@ function global:Install-Iterm2Theme($theme, $use = $true) {
 }
 
 function global:omp-refresh {
-	oh-my-posh init pwsh --config 'C:/Users/user/OneDrive/Code/user.omp.json' | Invoke-Expression
+	$config = Join-Path (Split-Path -Parent $PSScriptRoot) 'prompt.omp.json'
+	oh-my-posh init pwsh --config $config | Invoke-Expression
 }
 
 Import-Module -Name Terminal-Icons

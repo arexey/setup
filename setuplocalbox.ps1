@@ -1,80 +1,88 @@
-# Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-# Invoke-WebRequest https://chocolatey.org/install.ps1 -UseBasicParsing | iex
-# choco install git poshgit -y
-#Install-Module posh-git -Force
-if ($IsWindows -and (Get-Module -Name MSTerminalSettings -ListAvailable).Length -eq 0) {
-    Write-Host "Installing MSTermminalSettings module..."
-    Install-Module -Name MSTerminalSettings
+#Requires -Version 5.1
+# Windows dev-environment setup. Idempotent — safe to re-run.
+# Run from a PowerShell prompt (as Administrator recommended for winget installs).
+
+$ErrorActionPreference = 'Stop'
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+
+# --- 1. Install baseline PowerShell modules ------------------------------------
+if ($IsWindows -and -not (Get-Module -Name MSTerminalSettings -ListAvailable)) {
+    Write-Host "Installing MSTerminalSettings module..."
+    Install-Module -Name MSTerminalSettings -Force -Scope CurrentUser
 }
-if ((Get-Command oh-my-posh).Length -eq 0) {
+if (-not (Get-Command oh-my-posh -ErrorAction SilentlyContinue)) {
     Write-Host "Installing OhMyPosh..."
-    Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://ohmyposh.dev/install.ps1'))
-    # winget install JanDeDobbeleer.OhMyPosh -s winget
+    Set-ExecutionPolicy Bypass -Scope Process -Force
+    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://ohmyposh.dev/install.ps1'))
 }
-if ($IsWindows -and (gci "$env:SystemRoot\Fonts\Meslo LG M Bold Italic Nerd Font Complete Windows Compatible.ttf").Length -eq 0) {
-    Write-Host "Installing Meslo Font..."
+if ($IsWindows -and -not (Get-ChildItem "$env:SystemRoot\Fonts\Meslo*Nerd*.ttf" -ErrorAction SilentlyContinue)) {
+    Write-Host "Installing Meslo Nerd Font..."
     oh-my-posh font install Meslo
 }
-if ($IsWindows -and (Get-Module -Name Terminal-Icons -ListAvailable).Length -eq 0) {
+if ($IsWindows -and -not (Get-Module -Name Terminal-Icons -ListAvailable)) {
     Write-Host "Installing Terminal-Icons..."
-    Install-Module -Name Terminal-Icons -Repository PSGallery
+    Install-Module -Name Terminal-Icons -Repository PSGallery -Force -Scope CurrentUser
 }
 
-if($IsWindows) {
-    git clone --depth 1 https://github.com/ryanoasis/nerd-fonts.git
-    .\nerd-fonts\install.ps1
-# }
-# else {
-#     .\nerd-fonts\install.sh
+# --- 2. Nerd Fonts (broader set) ----------------------------------------------
+if ($IsWindows -and -not (Test-Path (Join-Path $ScriptDir 'nerd-fonts'))) {
+    git clone --depth 1 https://github.com/ryanoasis/nerd-fonts.git (Join-Path $ScriptDir 'nerd-fonts')
+    & (Join-Path $ScriptDir 'nerd-fonts\install.ps1')
 }
 
-$ScriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-$profilepath = $ScriptDir + "\Powershell\Microsoft.PowerShell_profile.ps1"
-$gitconfigpath = $ScriptDir + "\.gitconfig"
-
-$scriptcommand = ".'$profilepath'"
-
-$lines = "";
-if (Test-Path $PROFILE) {
-    $lines = [System.IO.File]::ReadAllLines($PROFILE)
-}
-else {
-    $profilePath = "$env:USERPROFILE\Documents"
-    if(-not $IsWindows) {
-        $profilePath = "$env:HOME\.config\powershell"
+# --- 3. Optional tools via winget ---------------------------------------------
+# Everything here used to be bundled in the repo. Now installed on demand.
+if ($IsWindows -and (Get-Command winget -ErrorAction SilentlyContinue)) {
+    $wingetPackages = @(
+        'Cmder-Mini.Cmder-Mini',                 # terminal
+        'NirSoft.ProcessExplorer',               # sysinternals
+        'Microsoft.Sysinternals.ProcessMonitor', # sysinternals
+        'REALiX.HWiNFO',                         # hardware info
+        'NickeManarin.ScreenToGif',              # screen capture -> gif
+        'VideoLAN.VLC',                          # media player
+        'GIMP.GIMP',                             # image editor
+        'dotPDN.PaintDotNet',                    # image editor
+        'WinDirStat.WinDirStat',                 # disk usage
+        'WinMerge.WinMerge'                      # diff/merge
+    )
+    foreach ($pkg in $wingetPackages) {
+        Write-Host "winget install $pkg ..."
+        winget install --id $pkg --silent --accept-source-agreements --accept-package-agreements -e 2>&1 |
+            Where-Object { $_ -notmatch 'already installed' } | Out-Host
     }
-    New-Item -Path $profilePath -Name "WindowsPowerShell" -ItemType directory
-    New-Item -Path $PROFILE -ItemType file
 }
 
-if (-not $lines.Contains($scriptCommand)) {
-    $lines = $lines + $scriptcommand
-    [System.IO.File]::WriteAllLines($PROFILE, $lines)
+# --- 4. Wire the PowerShell profile -------------------------------------------
+$profilePath = Join-Path $ScriptDir 'Powershell\Microsoft.PowerShell_profile.ps1'
+$scriptCommand = ". '$profilePath'"
+
+if (-not (Test-Path $PROFILE)) {
+    $parent = Split-Path -Parent $PROFILE
+    if (-not (Test-Path $parent)) { New-Item -Path $parent -ItemType Directory -Force | Out-Null }
+    New-Item -Path $PROFILE -ItemType File -Force | Out-Null
+}
+$existing = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+if ($existing -notmatch [regex]::Escape($scriptCommand)) {
+    Add-Content -Path $PROFILE -Value $scriptCommand
 }
 
+# --- 5. Windows Terminal font -------------------------------------------------
 if ($IsWindows) {
-    $settingsFile = "${Find-MSTerminalFolder}AppData\Local\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json"
-    $settings = (gc $settingsFile | ConvertFrom-Json)
-    if ($settings.profiles.defaults.font -eq $null) {
-        if ($settings.profiles.defaults -eq $null) {
-            $settings.profiles.defaults = @{}
-        }
-        else {
-            $settings.profiles.defaults | fc
-        }
-        Add-Member -InputObject $settings.profiles.defaults -Name 'font' -Value @{} -MemberType NoteProperty
-        # $settings.profiles.defaults.font = @{}
+    $settingsFile = Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json'
+    if (-not (Test-Path $settingsFile)) {
+        $settingsFile = Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json'
     }
-    else {
-        $settings.profiles.defaults.font | fc
+    if (Test-Path $settingsFile) {
+        $settings = Get-Content $settingsFile -Raw | ConvertFrom-Json
+        if ($null -eq $settings.profiles.defaults) {
+            Add-Member -InputObject $settings.profiles -Name 'defaults' -Value @{} -MemberType NoteProperty -Force
+        }
+        if ($null -eq $settings.profiles.defaults.font) {
+            Add-Member -InputObject $settings.profiles.defaults -Name 'font' -Value @{} -MemberType NoteProperty -Force
+        }
+        $settings.profiles.defaults.font.face = 'MesloLGM NF'
+        Set-Content -Path $settingsFile -Value (ConvertTo-Json $settings -Depth 32)
     }
-    $settings.profiles.defaults.font | fc
-    $settings.profiles.defaults.font.face | fc
-    $settings.profiles.defaults.font.face = "MesloLGM NF"
-    $settings.profiles.defaults.font | fc
-    set-content -Path $settingsFile -Value (ConvertTo-Json $settings)
 }
-    
-copy $gitconfigpath $env:USERPROFILE
-    
-.$PROFILE
+
+. $PROFILE

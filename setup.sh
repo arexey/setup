@@ -43,10 +43,6 @@ load_brew_env
 
 brew install figlet lolcat
 
-# copy .gitconfig
-figlet -t -f slant "=== copy .gitgonfig ===" | lolcat
-cp "$dir_path/.gitconfig" ~
-
 figlet -t -f slant "=== install zsh ===" | lolcat
 if ! command -v zsh >/dev/null 2>&1; then
     brew install zsh
@@ -151,9 +147,9 @@ fi
 figlet -f slant "=== update .zshrc ===" | lolcat
 if [[ -f ~/.zshrc ]]; then
     tmp=$(mktemp)
-    sed '/user.rc/d' ~/.zshrc > "$tmp" && mv "$tmp" ~/.zshrc
+    sed '/shell\.rc/d' ~/.zshrc > "$tmp" && mv "$tmp" ~/.zshrc
 fi
-echo "source $dir_path/user.rc" >> ~/.zshrc
+echo "source $dir_path/shell.rc" >> ~/.zshrc
 
 figlet -f slant "=== install nvm ===" | lolcat
 export NVM_DIR="$HOME/.nvm"

@@ -1,0 +1,30 @@
+# Binaries (installers, tools, archives) — install via package manager instead
+*.exe
+*.zip
+*.msi
+*.dll
+*.chm
+
+# Fonts — installed by nerd-fonts clone in setup scripts
+*.ttf
+*.otf
+*.woff
+*.woff2
+
+# Personal / local-only files
+.gitconfig
+*recovery*.txt
+*.pem
+*.key
+.env
+.env.*
+
+# Editor / OS junk
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Cloned third-party trees (setup scripts clone these into the repo dir)
+/nerd-fonts/

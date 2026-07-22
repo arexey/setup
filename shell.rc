@@ -17,7 +17,7 @@ dir_path="${full_path:h}"
 echo "Running $full_path in $dir_path with ($SHELL)"
 export ZSH=~/.oh-my-zsh
 
-# eval "$(oh-my-posh init zsh --config $dir_path/user.omp.json)"
+# eval "$(oh-my-posh init zsh --config $dir_path/prompt.omp.json)"
 
 for brew_candidate in /opt/homebrew/bin/brew /home/linuxbrew/.linuxbrew/bin/brew /usr/local/bin/brew; do
     if [[ -x "$brew_candidate" ]]; then
@@ -74,9 +74,8 @@ alias la="ls -a --color"
 alias ll="ls -la --color"
 alias rp="source ~/.zshrc"
 alias frp="unset _INC_SHELL_RC; source ~/.zshrc"
-alias ttenv="cp -R $dir_path/env-bak/* ~/git/tt/"
 alias bt="bashtop"
-alias ep="code $dir_path/user.rc"
+alias ep="code $dir_path/shell.rc"
 
 alias proxyon="export http_proxy='http://localhost:8888';export https_proxy='https://localhost:8888'"
 alias proxyoff="export http_proxy='';export https_proxy=''"
