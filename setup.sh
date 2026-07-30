@@ -128,7 +128,7 @@ figlet -t -f slab "=== install thefuck ===" | lolcat
 if ! command -v thefuck >/dev/null 2>&1; then
     brew install pipx
     pipx ensurepath
-    pipx install thefuck || pip3 install --user thefuck
+    pipx install thefuck || pip3 install --user thefuck || true
 fi
 
 # install useful tools

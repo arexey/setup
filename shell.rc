@@ -80,8 +80,6 @@ alias ep="code $dir_path/shell.rc"
 alias proxyon="export http_proxy='http://localhost:8888';export https_proxy='https://localhost:8888'"
 alias proxyoff="export http_proxy='';export https_proxy=''"
 
-echo "Loading PowerLevel 10K theme and settings..."
-[[ -f ~/powerlevel10k/powerlevel10k.zsh-theme ]] && source ~/powerlevel10k/powerlevel10k.zsh-theme
 _zc="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
 [[ -f $_zc/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source $_zc/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 [[ -f $_zc/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && source $_zc/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -125,6 +123,11 @@ echo "ZSH=$ZSH, ZSH_CUSTOM=$ZSH_CUSTOM"
 echo "Loading Oh My Zsh (from ${ZSH:-~/.oh-my-zsh}/oh-my-zsh.sh)..."
 source ${ZSH:-~/.oh-my-zsh}/oh-my-zsh.sh
 echo "ZSH=$ZSH, ZSH_CUSTOM=$ZSH_CUSTOM"
+
+# Powerlevel10k must load AFTER oh-my-zsh, otherwise ZSH_THEME overrides the prompt.
+echo "Loading PowerLevel 10K theme and settings..."
+[[ -f ~/powerlevel10k/powerlevel10k.zsh-theme ]] && source ~/powerlevel10k/powerlevel10k.zsh-theme
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
