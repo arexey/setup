@@ -124,7 +124,7 @@ figlet -t -f slant "=== install zoxide ===" | lolcat
 brew install zoxide
 figlet -t -f slant "=== install tldr ===" | lolcat
 brew install tlrc
-figlet -t -f slab "=== install thefuck ===" | lolcat
+figlet -t -f slant "=== install thefuck ===" | lolcat
 if ! command -v thefuck >/dev/null 2>&1; then
     brew install pipx
     pipx ensurepath
@@ -138,7 +138,7 @@ brew install python3
 python3 -m pip install --user psutil || pipx install psutil || true
 brew install bash coreutils gnu-sed git
 
-brew install bashtop
+brew install btop
 if [[ "$PLATFORM" == "mac" ]]; then
     brew install osx-cpu-temp
 fi

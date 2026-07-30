@@ -74,7 +74,7 @@ alias la="ls -a --color"
 alias ll="ls -la --color"
 alias rp="source ~/.zshrc"
 alias frp="unset _INC_SHELL_RC; source ~/.zshrc"
-alias bt="bashtop"
+alias bt="btop"
 alias ep="code $dir_path/shell.rc"
 
 alias proxyon="export http_proxy='http://localhost:8888';export https_proxy='https://localhost:8888'"
